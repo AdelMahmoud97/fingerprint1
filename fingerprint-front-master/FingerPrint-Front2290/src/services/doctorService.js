@@ -4,263 +4,306 @@
 // src/services/doctorService.js
 // src/services/doctorService.js
 
-const API_BASE_URL = "https://localhost:7069";
 
-export const fetchDoctorProfile = async () => {
+import axios from 'axios';
+const API_BASE_URL = "http://localhost:5266";
+const DrEmail = "adel1%40example.com";
+//---------------------------------------------------------------------------------------
+
+
+
+export const fetchDoctorProfile = async (DrEmail) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Doctors/GetAllDoctors`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Doctors/GetDoctorByEmail?Email=${DrEmail}`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
-    });
+    );
 
-    if (!response.ok) throw new Error("Failed to fetch doctor profile");
-
-    const data = await response.json();
-
-    if (Array.isArray(data) && data.length > 0) {
-      const doc = data[0]; // get the first doctor — you can change logic here
-
-      return {
-        id: doc.dr_Code,
-        name: doc.dr_NameEn,
-        email: doc.dr_Email,
-        phone: doc.phone,
-        department: "Computer Engineering", // replace if available in your API
-        title: "Associate Professor",        // replace if available in your API
-        office: "Building C, Room 214",      // replace if available in your API
-        officeHours: "Sunday & Tuesday, 2-4 PM",
-        experience: 12,
-        researchAreas: ["AI", "ML", "CV"]
-      };
+    if (!response.data || typeof response.data !== "object") {
+      throw new Error("Invalid data structure received from API");
     }
 
-    throw new Error("No doctor profile found.");
+    const profile = [{
+      id: response.data.dr_Code,
+      name: response.data.dr_NameAr,
+      email: response.data.dr_Email,
+      phone: response.data.phone,
+      department: response.data.faculty,
+      title: response.data.title,
+    }];
+
+    return profile;
+
   } catch (error) {
     console.error("Error fetching doctor profile:", error);
-    return null;
+    return [];
   }
 };
 
 
+//---------------------------------------------------------------------------------------
+
   
-  export const fetchCourses = async () => {
-    try {
-    const response = await fetch(`${API_BASE_URL}/api/Doctors/GetAllDoctors`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!response.ok) throw new Error("Failed to fetch doctor profile");
-
-    const data = await response.json();
-
-    // Only return the needed fields
-    return data.map(doc => ({
-        courseCode: "CS201",
-        name: doc.dr_NameAr,
-        creditHours: 3,
-        studentsCount: 50,
-        averageAttendance: 92,
-        status: "Completed"  // replace if available in your API
-      }
-    ));
-  } catch (error) {
-    console.error("Error fetching doctor profile:", error);
-    return []; // return empty array if error
-  }
-};
-  
-  export const fetchSchedule = async () => {
-    try {
-    const response = await fetch(`${API_BASE_URL}/api/Subjects/GetAllSubjects`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!response.ok) throw new Error("Failed to fetch doctor profile");
-
-    const data = await response.json();
-
-    // Only return the needed fields
-    return data.map(doc => ({
-        day: "Sunday", // replace if available in your API
-        courseCode: "CS201", // problem !!!!!
-        courseName: doc.sub_Name,
-        startTime: "09:00 AM", // replace if available in your API
-        endTime: "10:30 AM", // replace if available in your API
-        duration: "1.5 hours", // replace if available in your API
-        location: "Hall 1", // replace if available in your API
-        studentsCount: 45 // replace if available in your API
-      }
-    ));
-  } catch (error) {
-    console.error("Error fetching doctor profile:", error);
-    return []; // return empty array if error
-  }
-};
-  
-  export const fetchAttendanceStats = async () => {
-    try {
-    const response = await fetch(`${API_BASE_URL}/api/Subjects/GetAllSubjects`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!response.ok) throw new Error("Failed to fetch doctor profile");
-
-    const data = await response.json();
-
-    // Only return the needed fields
-    return data.map(doc => ({
-        averageAttendance: 85,
-      courseStats: 
-        {
-          courseCode:"CS201",
-          courseName: doc.sub_Name,
-          averageAttendance: 87,
-          lastSessionAttendance: 91,
-          atRiskStudents: 3,
-          sessions: [
-            {
-              date: "May 2, 2025",
-              time: "09:00 AM",
-              location: "Hall 1",
-              presentCount: 41,
-              absentCount: 4,
-              attendancePercentage: 91
-            },
-            {
-              date: "Apr 28, 2025",
-              time: "09:00 AM",
-              location: "Hall 1",
-              presentCount: 39,
-              absentCount: 6,
-              attendancePercentage: 87
-            },
-            {
-              date: "Apr 25, 2025",
-              time: "09:00 AM",
-              location: "Hall 1",
-              presentCount: 40,
-              absentCount: 5,
-              attendancePercentage: 89
-            },
-            {
-              date: "Apr 21, 2025",
-              time: "09:00 AM",
-              location: "Hall 1",
-              presentCount: 38,
-              absentCount: 7,
-              attendancePercentage: 84
-            },
-            {
-              date: "Apr 18, 2025",
-              time: "09:00 AM",
-              location: "Hall 1",
-              presentCount: 37,
-              absentCount: 8,
-              attendancePercentage: 82
-            }
-          ]
-        }, // replace if available in your API
-      }
-    ));
-  } catch (error) {
-    console.error("Error fetching doctor profile:", error);
-    return []; // return empty array if error
-  }
-};
-  ; // replace if available in your API   (problem)
-  
-  export const fetchStudentsList = async () => {
-    try {
-    const response = await fetch(`${API_BASE_URL}/api/Studets/GetAllStudets`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!response.ok) throw new Error("Failed to fetch doctor profile");
-
-    const data = await response.json();
-
-    // Only return the needed fields
-    return data.map(doc => (
+ export const fetchCourses = async (id) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Subjects/{id}${id}`,
       {
-        id: doc.st_Code,
-        name: doc.st_NameEn,
-        email: doc.st_Email,
-        department: doc.faculty,
-        year: doc.facYearSem_ID,
-        attendance:86 , // replace if available in your API
-        courses: [
-          {
-            courseCode: "CS201",
-            grades: {
-              midterm: 60,
-              assignments: 65,
-              final: 62,
-              total: 62,
-              letter: "D"
-            }
-          }
-        ]
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
+    );
+
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid course data structure received from API");
+    }
+
+    if (response.data.length === 0) {
+      return []; 
+    }
+
+    const courses = response.data.map(item => ({
+      courseCode: item.subCode || "CS201",
+      name: item.dr_NameEn || "Unknown",
+      creditHours: item.subName || 3,
+      studentsCount: item.studentsCount || 50,
+      averageAttendance: item.averageAttendance || 92,
+      status: item.status || "Completed"
+    }));
+
+    return courses;
+
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return [];
+  }
+};
+
+
+
+  //---------------------------------------------------------------------------------------
+
+  
+
+ export const fetchSchedule = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Doctors/DashBordDoctors?Dr_Email=${DrEmail}`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid data structure received from API");
+    }
+
+    if (response.data.length === 0) {
+      return []; // لا توجد بيانات، نرجع مصفوفة فارغة
+    }
+
+    // تحويل كل عنصر في المصفوفة إلى كائن الجدول المطلوب
+    const schedule = response.data.map(item => ({
+      day: item.day ,
+      courseCode: item.sub_Name ,
+      courseName: item.sub_Name ,
+      instructor: item.dr_NameAr , 
+      location: item.room_Num ,
+      studentsCount: item.totalStudents || 0, 
+    }));
+
+    return schedule;
     
-    ));
   } catch (error) {
-    console.error("Error fetching doctor profile:", error);
-    return []; // return empty array if error
+    console.error("Error fetching schedule:", error);
+    return [];
   }
 };
-  
-  export const fetchNotifications = async () => {
-    return [
+  //---------------------------------------------------------------------------------------
+
+
+  export const fetchStudentsList = async (StEmail) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Studets/GetStudetByEmail?Email=${StEmail}`,
       {
-        id: 1,
-        message: "Reminder: Faculty meeting tomorrow at 2 PM in Conference Room A.",
-        date: "May 5, 2025",
-        isRead: false
-      },
-      {
-        id: 2,
-        message: "New academic calendar for next semester has been published.",
-        date: "May 3, 2025",
-        isRead: false
-      },
-      {
-        id: 3,
-        message: "Your request for lab equipment has been approved.",
-        date: "May 1, 2025",
-        isRead: true
-      },
-      {
-        id: 4,
-        message: "Reminder: Final exam submission deadline is May 15.",
-        date: "April 28, 2025",
-        isRead: true
-      },
-      {
-        id: 5,
-        message: "Student Ahmed Tarek has requested a meeting.",
-        date: "April 25, 2025",
-        isRead: true
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
-    ];
-  }; // replace if available in your API
+    );
+
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid data structure received from API");
+    }
+
+    if (response.data.length === 0) {
+      return []; // لا توجد بيانات، نرجع مصفوفة فارغة
+    }
+
+    // تحويل كل عنصر في المصفوفة إلى كائن الطالب المطلوب
+    const students = response.data.map(item => ({
+     id: item.st_Code,
+      name: item.st_NameEn,
+      email: item.st_Email,
+      department: item.room_Num,
+      year: item.facYearSem_ID,
+      attendance: item.attendance || 86, // replace if available in your API
+      courses: [
+        {
+          courseCode: item.subCode,
+          grades: {
+            midterm: 60,
+            assignments: 65,
+            final: 62,
+            total: 62,
+            letter: "D"
+          }
+        }
+      ]
+    }));
+
+    return students;
+    
+  } catch (error) {
+    console.error("Error fetching students list:", error);
+    return [];
+  }
+};
+
+
+
+  //---------------------------------------------------------------------------------------
+
+
+ export const fetchAttendanceStats = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Doctors/DashBordDoctors?Dr_Email=${DrEmail}`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid data structure received from API");
+    }
+
+    if (response.data.length === 0) {
+      return []; // لا توجد بيانات، نرجع مصفوفة فارغة
+    }
+
+    // تحويل كل عنصر في المصفوفة إلى كائن إحصائيات الحضور المطلوب
+    const attendanceStats = response.data.map(item => ({
+      averageAttendance: item.averageAttendance,
+      courseStats: {
+        courseCode: item.courseCode,
+        courseName: item.sub_Name,
+        averageAttendance: item.averageAttendance,
+        lastSessionAttendance: item.lastSessionAttendance,
+        atRiskStudents: item.atRiskStudents,
+        sessions: [{
+          date: item.date,
+          time: item.time,
+          location: item.room_Num,
+          presentCount: item.presentCount,
+          absentCount: item.absentCount,
+          attendancePercentage: item.attendancePercentage
+        }]
+      }
+    }));
+
+    return attendanceStats;
+    
+  } catch (error) {
+    console.error("Error fetching attendance stats:", error);
+    return [];
+  }
+};
+ // replace if available in your API   (problem)
+
+
+  //---------------------------------------------------------------------------------------
+
+
+  export const fetchNotifications = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Notifications/GetAllNotifications`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid data structure received from API");
+    }
+
+    if (response.data.length === 0) {
+      return []; // لا توجد بيانات، نرجع مصفوفة فارغة
+    }
+
+    // تحويل كل عنصر في المصفوفة إلى كائن الإشعار المطلوب
+    const notifications = response.data.map(item => ({
+      id: item.id,
+      message: item.message,
+      date: item.date,
+      isRead: item.isRead
+    }));
+
+    return notifications;
+    
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return [];
+  }
+};
+
+  // replace if available in your API
   
-  export const fetchGradeDistribution = async () => {
-    return {
-      "CS201": [
+  //---------------------------------------------------------------------------------------
+
+
+ export const fetchGradeDistribution = async () => {
+  try {
+    // Step 1: جلب بيانات الكورسات
+    const coursesResponse = await axios.get(`${API_BASE_URL}/api/Courses/GetAllCourses`, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!coursesResponse.data) throw new Error("Failed to fetch courses data");
+
+    const coursesData = coursesResponse.data;
+
+    // Step 2: جلب بيانات توزيع الدرجات
+    const gradesResponse = await axios.get(`${API_BASE_URL}/api/Grades/GetGradeDistribution`, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!gradesResponse.data) throw new Error("Failed to fetch grade distribution data");
+
+    const gradesData = gradesResponse.data;
+
+    // Step 3: دمج البيانات وتنسيقها
+    const result = {};
+    coursesData.forEach((course, index) => {
+      const courseCode = course.courseCode || "CS201";
+      result[courseCode] = gradesData[index]?.distribution || [
         { grade: "A", count: 10 },
         { grade: "A-", count: 8 },
         { grade: "B+", count: 7 },
@@ -270,97 +313,94 @@ export const fetchDoctorProfile = async () => {
         { grade: "C", count: 3 },
         { grade: "D", count: 1 },
         { grade: "F", count: 1 }
-      ],
-      "CS303": [
-        { grade: "A", count: 15 },
-        { grade: "A-", count: 10 },
-        { grade: "B+", count: 6 },
-        { grade: "B", count: 4 },
-        { grade: "B-", count: 2 },
-        { grade: "C+", count: 1 },
-        { grade: "C", count: 0 },
-        { grade: "D", count: 0 },
-        { grade: "F", count: 0 }
-      ],
-      "CS305": [
-        { grade: "A", count: 8 },
-        { grade: "A-", count: 7 },
-        { grade: "B+", count: 9 },
-        { grade: "B", count: 8 },
-        { grade: "B-", count: 5 },
-        { grade: "C+", count: 3 },
-        { grade: "C", count: 1 },
-        { grade: "D", count: 1 },
-        { grade: "F", count: 0 }
-      ]
-    };
-  }; // replace if available in your API
+      ];
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching grade distribution:", error);
+    return {}; // return empty object if error
+  }
+};
   
+  // replace if available in your API
+  
+
+  //---------------------------------------------------------------------------------------
+
+
   export const fetchRecentActivity = async () => {
-    return [
-      {
-        id: 1,
-        type: "attendance",
-        description: "Recorded attendance for CS303 - AI Fundamentals",
-        time: "Today, 1:30 PM"
-      },
-      {
-        id: 2,
-        type: "grade",
-        description: "Updated grades for CS201 -  1:30 PM"
-      },
-      {
-        id: 2,
-        type: "grade",
-        description: "Updated grades for CS201 - Operating Systems",
-        time: "Today, 11:45 AM"
-      },
-      {
-        id: 3,
-        type: "course",
-        description: "Added new lecture materials for CS305 - Computer Networks",
-        time: "Yesterday, 3:15 PM"
-      },
-      {
-        id: 4,
-        type: "attendance",
-        description: "Recorded attendance for CS201 - Operating Systems",
-        time: "Yesterday, 9:30 AM"
-      },
-      {
-        id: 5,
-        type: "grade",
-        description: "Graded assignments for CS303 - AI Fundamentals",
-        time: "May 3, 2025, 2:00 PM"
-      }
-    ];
-  }; // replace if available in your API
-  export const addOrUpdateDoctor = async (doctorData) => {
   try {
-    const response = await fetch(`https://localhost:7069/api/Doctors/Add_OR_UpdateDoctor`, {
-      method: "POST",
+    // Step 1: جلب بيانات الأنشطة الأخيرة
+    const activitiesResponse = await axios.get(`${API_BASE_URL}/api/Activities/GetAllRecentActivities`, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!activitiesResponse.data) throw new Error("Failed to fetch recent activities");
+
+    const activitiesData = activitiesResponse.data;
+
+    // Step 2: جلب تفاصيل الأنشطة
+    const detailsResponse = await axios.get(`${API_BASE_URL}/api/ActivityDetails/GetAllDetails`, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!detailsResponse.data) throw new Error("Failed to fetch activity details");
+
+    const detailsData = detailsResponse.data;
+
+    // Step 3: دمج البيانات وتنسيقها
+    return activitiesData.map((activity, index) => ({
+      id: activity.id || index + 1,
+      type: activity.type || "attendance",
+      description: activity.description || "Recorded attendance for CS303 - AI Fundamentals",
+      time: detailsData[index]?.time || "Today, 1:30 PM"
+    }));
+  } catch (error) {
+    console.error("Error fetching recent activity:", error);
+    return []; // return empty array if error
+  }
+};
+
+  // replace if available in your API
+
+  //---------------------------------------------------------------------------------------
+
+
+ export const addOrUpdateDoctor = async (doctorData) => {
+  try {
+    const response = await axios.post(`https://localhost:7069/api/Doctors/Add_OR_UpdateDoctor`, doctorData, {
       headers: {
         "Content-Type": "application/json",
-      },
-      body: JSON.stringify(doctorData),
+      }
     });
-    if (!response.ok) throw new Error("Failed to add or update doctor");
-    return await response.json();
+
+    if (!response.data) throw new Error("Failed to add or update doctor");
+
+    return response.data;
   } catch (error) {
     console.error("Error in addOrUpdateDoctor:", error);
     throw error;
   }
 };
 
+//---------------------------------------------------------------------------------------
+
+
 export const deleteDoctor = async (doctorId) => {
   try {
-    const response = await fetch(`https://localhost:7069/api/Doctors/DeleteDoctor?id=${doctorId}`, {
-      method: "DELETE",
+    const response = await axios.delete(`https://localhost:7069/api/Doctors/DeleteDoctor?id=${doctorId}`, {
       headers: {
         "Content-Type": "application/json",
-      },
+      }
     });
-    if (!response.ok) throw new Error("Failed to delete doctor");
+
+    if (!response.status === 200) throw new Error("Failed to delete doctor");
+
     return { success: true };
   } catch (error) {
     console.error("Error in deleteDoctor:", error);

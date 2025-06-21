@@ -1,131 +1,183 @@
-// src/services/studentService.js
-// ✅ mock API responses until backend is ready
-const API_BASE_URL = "https://localhost:7069";
-export const fetchStudentProfile = async () => {
+import axios from 'axios';
+
+const API_BASE_URL = "http://localhost:5266";
+const StEmail = "adel%40example.com";
+
+
+//---------------------------------------------------------------------------------------
+
+
+export const fetchStudentProfile = async (StEmail) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Studets/GetAllStudets`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Studets/GetStudetByEmail?Email=${StEmail}`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
-    });
+    );
 
-    if (!response.ok) throw new Error("Failed to fetch doctor profile");
-
-    const data = await response.json();
-
-    if (Array.isArray(data) && data.length > 0) {
-      const doc = data[0]; // get the first doctor — you can change logic here
-
-      return {
-        displayName: doc.st_NameEn,
-        email: doc.st_Email,
-        department: doc.faculty,
-        year: doc.facYearSem_ID,
-        gpa: 3.4,
-        fingerprintRegistered: true
-      };
+    if (!response.data || typeof response.data !== 'object' || Array.isArray(response.data)) {
+      throw new Error("Invalid data structure received from API");
     }
 
-    throw new Error("No doctor profile found.");
+    // تحويل الكائن إلى كائن ملف الطالب المطلوب داخل مصفوفة
+    const studentProfiles = [{
+      id: response.data.st_Code,
+      displayName: response.data.st_NameEn,
+      email: response.data.st_Email,
+      department: response.data.faculty,
+      year: response.data.year || response.data.facYearSem_ID,
+      gpa: response.data.gpa,
+      fingerprintRegistered: response.data.fingerprintRegistered
+    }];
+
+    return studentProfiles;
+    
   } catch (error) {
-    console.error("Error fetching doctor profile:", error);
-    return null;
+    console.error("Error fetching student profile:", error);
+    return [];
   }
 };
-  
-  // Example API: fetchTimetable with courseCode
+
+
+  //---------------------------------------------------------------------------------------
+
+
 export const fetchTimeTable = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Subjects/GetAllSubjects`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Studets/DashBordStudets${StEmail}`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
-    });
+    );
 
-    if (!response.ok) throw new Error("Failed to fetch doctor profile");
-
-    const data = await response.json();
-
-    if (Array.isArray(data) && data.length > 0) {
-      const doc = data[0]; // you can change logic here
-
-      // ✅ Wrap in array
-      return [{
-        courseCode:"CS201",
-        course: doc.sub_Name,
-        day: "Sunday",
-        time: "09:00 AM - 10:30 AM",
-        instructor:doc.instructors,
-        location: "Hall 1"
-      }];
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid data structure received from API");
     }
 
-    throw new Error("No doctor profile found.");
+    if (response.data.length === 0) {
+      return []; // لا توجد بيانات، نرجع مصفوفة فارغة
+    }
+
+    // تحويل كل عنصر في المصفوفة إلى كائن الجدول المطلوب
+    const schedule = response.data.map(item => ({
+      day: item.day,
+      courseCode: item.sub_Name,
+      courseName: item.sub_Name,
+      instructor: item.dr_NameAr,
+      location: item.room_Num,
+      studentsCount: item.totalStudents || 0
+    }));
+
+    return schedule;
+    
   } catch (error) {
-    console.error("Error fetching doctor profile:", error);
+    console.error("Error fetching timetable:", error);
     return [];
   }
 };
 
-  
-  export const fetchAttendanceSummary = async () => {
-    return {
-      total: 30,
-      attended: 26,
-      missed: 4,
-      percentage: 86.6
-    };
-  };
-  
-  export const fetchFingerprintLogs = async () => {
-    return [
-      { date: "2025-05-05", time: "09:00 AM", location: "Main Gate", result: "Success", courseCode: "CS201" },
-      { date: "2025-05-05", time: "01:05 PM", location: "Main Gate", result: "Success", courseCode: "CS303" },
-      { date: "2025-05-04", time: "08:55 AM", location: "Library", result: "Failed", courseCode: "CS305" }
-    ];
-  };
-  
-  
-  export const matchFingerprint = async () => {
-    const success = Math.random() > 0.2;
-    return {
-      success,
-      message: success ? "Fingerprint matched ✅" : "Fingerprint not matched ❌"
-    };
-  };
+  //---------------------------------------------------------------------------------------
 
- export const fetchCourseAttendance = async () => {
+
+
+export const fetchCourseAttendance = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/Subjects/GetAllSubjects`, {
-      method: "GET",
+    const response = await axios.get(
+      `${API_BASE_URL}/api/Subjects/${id}`,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid data structure received from API");
+    }
+
+    if (response.data.length === 0) {
+      return []; // لا توجد بيانات، نرجع مصفوفة فارغة
+    }
+
+    // تحويل كل عنصر في المصفوفة إلى كائن حضور المادة المطلوب
+    const courseAttendance = response.data.map(item => ({
+      courseCode: item.subCode,
+      name: item.subName,
+      instructor: item.doctor,
+      credit: item.credit,
+      status: item.status
+    }));
+
+    return courseAttendance;
+    
+  } catch (error) {
+    console.error("Error fetching course attendance:", error);
+    return [];
+  }
+};
+
+//---------------------------------------------------------------------------------------
+
+
+
+export const fetchAttendanceSummary = async () => {
+  return {
+    total: 30,
+    attended: 26,
+    missed: 4,
+    percentage: 86.6
+  };
+};
+
+export const fetchFingerprintLogs = async () => {
+  try {
+    // جلب سجلات البصمة
+    const logsResponse = await axios.get(`${API_BASE_URL}/api/FingerprintLogs/GetAllFingerprintLogs`, {
       headers: {
         "Content-Type": "application/json"
       }
     });
 
-    if (!response.ok) throw new Error("Failed to fetch doctor profile");
+    if (!logsResponse.data) throw new Error("Failed to fetch fingerprint logs");
 
-    const data = await response.json();
+    const logsData = logsResponse.data;
 
-    if (Array.isArray(data) && data.length > 0) {
-      const doc = data[0]; // you can change logic here
+    // جلب تفاصيل الكورسات
+    const courseResponse = await axios.get(`${API_BASE_URL}/api/Attendance/GetAllSubjects`, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
 
-      // ✅ Wrap in array
-      return [{
-        courseCode:"CS201",
-        name:doc.sub_Name,
-        instructor:doc.instructors,
-        credit: 4,
-        status:"Ongoing",
-      }];
-    } 
+    if (!courseResponse.data) throw new Error("Failed to fetch course details");
 
-    throw new Error("No doctor profile found.");
+    const courseData = courseResponse.data;
+
+    // دمج البيانات وتنسيقها
+    return logsData.map((log, index) => ({
+      date: log.date || "2025-05-05",
+      time: log.time || "09:00 AM",
+      location: log.location || "Main Gate",
+      result: log.result || "Success",
+      courseCode: courseData[index]?.subCode || "CS201"
+    }));
   } catch (error) {
-    console.error("Error fetching doctor profile:", error);
+    console.error("Error fetching fingerprint logs:", error);
     return [];
   }
 };
-  
+
+export const matchFingerprint = async () => {
+  const success = Math.random() > 0.2;
+  return {
+    success,
+    message: success ? "Fingerprint matched ✅" : "Fingerprint not matched ❌"
+  };
+};
+
